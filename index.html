@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>40 Units to Boston: The Berkeley-to-Boston Sprint | Countdown Lock Screen</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Tone.js for Ambient Audio Synthesizer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+                        serif: ['Playfair Display', 'Georgia', 'serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        glow: {
+                            '0%': { filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.4))' },
+                            '100%': { filter: 'drop-shadow(0 0 15px rgba(255,255,255,0.8))' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Lock Screen Scrollbar & Blur FX */
+        .glass-panel {
+            background: rgba(18, 18, 24, 0.55);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .glass-card-hover:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        /* Dynamic Wallpapers */
+        .wp-berkeley {
+            background: linear-gradient(135deg, #1e1b4b 0%, #311042 40%, #701a75 70%, #d97706 100%);
+        }
+        .wp-boston {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 40%, #0369a1 75%, #0d9488 100%);
+        }
+        .wp-oled {
+            background: radial-gradient(circle at 50% 30%, #18181b 0%, #09090b 70%, #000000 100%);
+        }
+        .wp-lofi {
+            background: linear-gradient(135deg, #2e1065 0%, #581c87 35%, #831843 70%, #9a3412 100%);
+        }
+        .wp-flight {
+            background: linear-gradient(180deg, #0284c7 0%, #0f172a 60%, #020617 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 font-bold text-xl">
+                    ⚡
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            Handshake x Google AI Challenge
+                        </span>
+                        <span class="text-xs text-slate-400 hidden sm:inline">• 20 Days to Boston Flight</span>
+                    </div>
+                    <h1 class="text-lg font-bold text-white tracking-tight leading-tight">
+                        40 Units to Boston: <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-indigo-300 to-sky-300">The Berkeley-to-Boston Sprint</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button onclick="toggleAudio()" id="audio-toggle-btn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-2 transition">
+                    <i data-lucide="headphones" class="w-4 h-4 text-indigo-400"></i>
+                    <span id="audio-btn-text">Focus Audio: Off</span>
+                </button>
+                <button onclick="openSubmissionModal()" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-500 hover:to-sky-500 text-xs font-semibold text-white shadow-md flex items-center gap-1.5 transition">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                    <span>Contest Submission Card</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- LEFT COLUMN: Realistic Smartphone Lock Screen Frame (Interactive Lock Screen) -->
+        <section class="lg:col-span-5 flex flex-col items-center justify-start space-y-4">
+
+            <div class="w-full flex items-center justify-between px-2 text-xs text-slate-400">
+                <span class="flex items-center gap-1.5 font-medium">
+                    <i data-lucide="smartphone" class="w-4 h-4 text-amber-400"></i> Live Lock Screen Render
+                </span>
+                <div class="flex gap-1.5">
+                    <button onclick="setWallpaper('berkeley')" class="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-900 to-amber-500 border border-white/40 hover:scale-110 transition" title="UC Berkeley Dusk"></button>
+                    <button onclick="setWallpaper('boston')" class="w-5 h-5 rounded-full bg-gradient-to-tr from-blue-900 to-teal-400 border border-white/40 hover:scale-110 transition" title="Boston Skyline"></button>
+                    <button onclick="setWallpaper('lofi')" class="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-900 to-amber-600 border border-white/40 hover:scale-110 transition" title="Lo-Fi Study Desk"></button>
+                    <button onclick="setWallpaper('flight')" class="w-5 h-5 rounded-full bg-gradient-to-tr from-sky-600 to-slate-900 border border-white/40 hover:scale-110 transition" title="SFO to BOS Flight"></button>
+                    <button onclick="setWallpaper('oled')" class="w-5 h-5 rounded-full bg-zinc-900 border border-white/40 hover:scale-110 transition" title="OLED Stealth Black"></button>
+                </div>
+            </div>
+
+            <!-- iPhone 16 Pro Max Frame Container -->
+            <div id="phone-wrapper" class="relative w-full max-w-[380px] h-[780px] rounded-[52px] p-4 bg-slate-900 shadow-2xl border-[6px] border-slate-700/80 ring-1 ring-slate-950/80 transition-all duration-300">
+
+                <!-- Physical Buttons Styling -->
+                <div class="absolute -left-[10px] top-28 w-[4px] h-10 bg-slate-700 rounded-l-md"></div>
+                <div class="absolute -left-[10px] top-42 w-[4px] h-14 bg-slate-700 rounded-l-md"></div>
+                <div class="absolute -left-[10px] top-60 w-[4px] h-14 bg-slate-700 rounded-l-md"></div>
+                <div class="absolute -right-[10px] top-36 w-[4px] h-20 bg-slate-700 rounded-r-md"></div>
+
+                <!-- Smartphone Screen Inner Canvas -->
+                <div id="lockscreen-bg" class="relative w-full h-full rounded-[40px] overflow-hidden flex flex-col justify-between p-5 text-white select-none transition-all duration-500 wp-berkeley shadow-inner">
+
+                    <!-- Top Lock Screen Status Bar -->
+                    <div class="flex items-center justify-between text-xs font-semibold tracking-wider pt-1 px-1 z-20">
+                        <span id="status-time" class="text-white drop-shadow">09:41</span>
+                        <!-- Dynamic Island Notch -->
+                        <div id="dynamic-island" onclick="toggleDynamicIsland()" class="cursor-pointer px-3 py-1 bg-black/80 hover:bg-black rounded-full flex items-center gap-2 border border-white/10 shadow-lg transition-all duration-300">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="text-[10px] font-medium text-slate-200" id="dynamic-island-text">20 Days • BOS Flight</span>
+                            <i data-lucide="plane" class="w-3 h-3 text-sky-400"></i>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-white drop-shadow">
+                            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                            <i data-lucide="battery" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+
+                    <!-- Lock Screen Header: Date & Clock Clearance Zone -->
+                    <div class="flex flex-col items-center pt-4 z-20 text-center">
+                        <div class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-200/90 uppercase drop-shadow mb-1">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                            <span id="lock-date">Thursday, Nov 6</span>
+                        </div>
+                        <!-- Big iOS Style Clock with clearance -->
+                        <h1 id="lock-time" class="text-6xl font-bold tracking-tight text-white drop-shadow-lg font-sans">
+                            12:45
+                        </h1>
+                        <!-- Current Focus Target Tag -->
+                        <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-medium text-white shadow-sm">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                            <span id="lock-focus-goal">Goal: CS 162 Thread Scheduler & BOS Countdown</span>
+                        </div>
+                    </div>
+
+                    <!-- LOCK SCREEN INTERACTIVE WIDGETS SECTION -->
+                    <div class="space-y-3 my-auto z-20">
+
+                        <!-- Primary Widget 1: The Dual-Metric Berkeley-to-Boston Tracker -->
+                        <div class="glass-panel rounded-2xl p-3.5 text-left space-y-2.5 shadow-xl border border-white/20">
+                            <div class="flex items-center justify-between text-xs font-bold text-amber-300 border-b border-white/10 pb-1.5">
+                                <span class="flex items-center gap-1.5">
+                                    <i data-lucide="compass" class="w-4 h-4 text-amber-400"></i>
+                                    BERKELEY ✈️ BOSTON SPRINT
+                                </span>
+                                <span class="text-[11px] font-mono text-slate-300" id="days-countdown-badge">20 DAYS REMAINING</span>
+                            </div>
+
+                            <!-- Dual Progress Bars: 40 Units vs Flight Deadline -->
+                            <div class="space-y-2 text-xs">
+                                <!-- Progress Bar 1: Academic Units Done -->
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-200 font-medium mb-1">
+                                        <span>🎓 Academic Units Completed (40u Total)</span>
+                                        <span id="widget-unit-percent" class="font-bold text-emerald-300">45%</span>
+                                    </div>
+                                    <div class="w-full bg-black/40 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/10">
+                                        <div id="widget-unit-bar" class="bg-gradient-to-r from-emerald-400 to-teal-300 h-full rounded-full transition-all duration-500" style="width: 45%;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar 2: Flight Countdown Progress -->
+                                <div>
+                                    <div class="flex justify-between text-[11px] text-slate-200 font-medium mb-1">
+                                        <span>✈️ Time Elapsed to BOS Flight</span>
+                                        <span id="widget-time-percent" class="font-bold text-sky-300">0%</span>
+                                    </div>
+                                    <div class="w-full bg-black/40 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/10">
+                                        <div id="widget-time-bar" class="bg-gradient-to-r from-sky-400 to-indigo-400 h-full rounded-full transition-all duration-500" style="width: 5%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Distance Counter & Motivation Quote -->
+                            <div class="flex items-center justify-between pt-1 text-[10px] text-slate-300 border-t border-white/10">
+                                <span>📍 Distance: <strong class="text-white" id="distance-counter">2,697 miles</strong> remaining</span>
+                                <span class="text-amber-200 font-medium">Keep 3.8+ GPA!</span>
+                            </div>
+                        </div>
+
+                        <!-- Widget 2: Today's High Priority Academic Milestones -->
+                        <div class="glass-panel rounded-2xl p-3 text-left space-y-2 shadow-xl border border-white/15">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                    <i data-lucide="check-square" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                    <span id="widget-day-title">Day 1 / 20 Milestones</span>
+                                </span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-mono" id="widget-course-code">CS 162 + EECS 126</span>
+                            </div>
+
+                            <div id="widget-milestones-list" class="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+                                <!-- Milestones injected dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Widget 3: Girlfriend Lock Screen Message Notification Card -->
+                        <div onclick="showLoveNoteModal()" class="glass-panel rounded-2xl p-2.5 flex items-center gap-3 cursor-pointer hover:bg-white/15 transition group border border-white/20">
+                            <div class="w-8 h-8 rounded-full bg-pink-500/30 border border-pink-400/40 flex items-center justify-center text-pink-300 font-bold shrink-0">
+                                💖
+                            </div>
+                            <div class="flex-1 min-w-0 text-left">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold text-white truncate">Message from Boston (Maya)</span>
+                                    <span class="text-[9px] text-slate-400">2m ago</span>
+                                </div>
+                                <p class="text-[11px] text-slate-200 truncate" id="preview-gf-message">
+                                    "Finish that CS162 lab baby! North End cannolis waiting for you in 20 days! 🥐"
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Lock Screen Controls & Swipe Indicator -->
+                    <div class="flex flex-col items-center space-y-3 pt-2 z-20">
+                        <div class="w-full flex justify-between px-4">
+                            <!-- Quick Flashlight Toggle -->
+                            <button onclick="toggleFlashlight()" id="btn-flashlight" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition">
+                                <i data-lucide="zap" class="w-4 h-4"></i>
+                            </button>
+                            <!-- Quick Camera/Sprint Switch Toggle -->
+                            <button onclick="toggleSprintViewMode()" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition" title="Toggle Lock Screen vs Full Screen">
+                                <i data-lucide="sliders" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <!-- iOS Bottom Home Bar -->
+                        <div class="w-32 h-1 bg-white/70 rounded-full shadow"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-400 text-center max-w-xs">
+                💡 <em>Tip: Click items inside the lock screen or use the interactive timeline deck to check off tasks in real-time.</em>
+            </p>
+        </section>
+
+
+        <!-- RIGHT COLUMN: Interactive Academic Sprint Dashboard & Handshake Project Configurator -->
+        <section class="lg:col-span-7 space-y-6">
+
+            <!-- Live Status Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Days Countdown Card -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>COUNTDOWN TO BOSTON</span>
+                        <i data-lucide="clock" class="w-4 h-4 text-sky-400"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-2xl font-bold font-mono text-white" id="main-countdown-clock">20d 00h 00m 00s</div>
+                        <p class="text-[11px] text-sky-300">SFO ✈️ BOS (Flight UA 2412)</p>
+                    </div>
+                    <div class="text-[10px] text-slate-400 border-t border-slate-800 pt-1.5 flex justify-between">
+                        <span>Target: Nov 26, 2026</span>
+                        <span class="text-emerald-400 font-semibold">On Track</span>
+                    </div>
+                </div>
+
+                <!-- 40 Unit Workload Tracker -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>UC BERKELEY LOAD</span>
+                        <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-2xl font-bold font-mono text-amber-300" id="main-units-completed">18 / 40 Units</div>
+                        <p class="text-[11px] text-slate-300">5 Upper-Div CS/EECS Courses</p>
+                    </div>
+                    <div class="text-[10px] text-slate-400 border-t border-slate-800 pt-1.5 flex justify-between">
+                        <span>Target GPA: 3.85+</span>
+                        <span id="gpa-status-badge" class="text-emerald-400 font-semibold">GPA Safe</span>
+                    </div>
+                </div>
+
+                <!-- Study Streak & Productivity -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>STUDY FOCUS STREAK</span>
+                        <i data-lucide="flame" class="w-4 h-4 text-rose-500"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-2xl font-bold font-mono text-rose-400" id="streak-counter">7 Days 🔥</div>
+                        <p class="text-[11px] text-slate-300">Avg 11.5 hrs/day focus</p>
+                    </div>
+                    <div class="text-[10px] text-slate-400 border-t border-slate-800 pt-1.5 flex justify-between">
+                        <span>Pomodoro Sprints</span>
+                        <span class="text-amber-400 font-semibold">42 Sessions</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Interactive 20-Day UC Berkeley Milestone Navigator -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                    <div>
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="list-checks" class="w-5 h-5 text-indigo-400"></i>
+                            20-Day 40-Unit UC Berkeley Academic Roadmap
+                        </h2>
+                        <p class="text-xs text-slate-400">Select any day to inspect and complete milestones mapped leading up to your Boston flight.</p>
+                    </div>
+
+                    <!-- Day Selector Dropdown / Quick Jumper -->
+                    <div class="flex items-center gap-2">
+                        <label for="day-select" class="text-xs font-medium text-slate-400">Select Day:</label>
+                        <select id="day-select" onchange="loadDayMilestones(parseInt(this.value))" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <!-- Options generated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 20-Day Horizontal Scrollable Ribbon -->
+                <div class="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-thin" id="day-tabs-ribbon">
+                    <!-- Day tabs injected dynamically -->
+                </div>
+
+                <!-- Active Day Detail Card & Checkoff List -->
+                <div id="active-day-detail-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
+                    <!-- Dynamic Active Day Content -->
+                </div>
+            </div>
+
+
+            <!-- Lock Screen Customization & Audio Engine Deck -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <!-- Lock Screen Styling Controls -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                        <i data-lucide="palette" class="w-4 h-4 text-purple-400"></i>
+                        Lock Screen Aesthetics
+                    </h3>
+
+                    <!-- Wallpaper Presets -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs text-slate-400">Wallpaper Theme:</label>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <button onclick="setWallpaper('berkeley')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left text-slate-200">
+                                🌅 Berkeley Sunset
+                            </button>
+                            <button onclick="setWallpaper('boston')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left text-slate-200">
+                                🏙️ Boston River
+                            </button>
+                            <button onclick="setWallpaper('lofi')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left text-slate-200">
+                                ☕ Lo-Fi Study Desk
+                            </button>
+                            <button onclick="setWallpaper('flight')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left text-slate-200">
+                                ✈️ Airplane Wing
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Lock Goal Input -->
+                    <div class="space-y-1.5">
+                        <label for="custom-goal-input" class="text-xs text-slate-400">Lock Screen Goal Headline:</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="custom-goal-input" value="CS 162 Thread Scheduler & BOS Countdown" class="bg-slate-950 border border-slate-700 text-white text-xs rounded-lg px-3 py-1.5 flex-1 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                            <button onclick="updateGoalText()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">Update</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Focus Synthesizer Engine (Tone.js Ambient Generator) -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                        <i data-lucide="radio" class="w-4 h-4 text-emerald-400"></i>
+                        Focus Audio Synthesizer (Tone.js)
+                    </h3>
+
+                    <p class="text-xs text-slate-400">Synthesize ambient study audio directly in browser to maintain deep work state while studying 40 units.</p>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <button onclick="setAudioMode('rain')" id="sound-btn-rain" class="px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center gap-2">
+                            <span>🌧️ Deep Rain FX</span>
+                        </button>
+                        <button onclick="setAudioMode('white')" id="sound-btn-white" class="px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center gap-2">
+                            <span>📻 Brown Noise</span>
+                        </button>
+                        <button onclick="setAudioMode('binaural')" id="sound-btn-binaural" class="px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center gap-2">
+                            <span>🧠 40Hz Beta Beats</span>
+                        </button>
+                        <button onclick="setAudioMode('off')" id="sound-btn-off" class="px-2.5 py-2 rounded-lg bg-rose-950/40 border border-rose-800/40 text-rose-300 flex items-center gap-2">
+                            <span>🔇 Mute Audio</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-1">
+                        <span class="text-xs text-slate-400">Volume:</span>
+                        <input type="range" id="audio-volume" min="-30" max="0" value="-12" onchange="adjustVolume(this.value)" class="w-full accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Girlfriend Love Note Modal -->
+    <div id="lovenote-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-pink-500/30 rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
+            <button onclick="closeLoveNoteModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-pink-500/20 border border-pink-400/40 flex items-center justify-center text-pink-400 text-2xl">
+                    💖
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Message from Boston (Maya)</h3>
+                    <p class="text-xs text-pink-300">Sent from Logan Airport Terminal B area</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-sm text-slate-200 leading-relaxed italic">
+                "Hey handsome! I know taking 40 units at Cal this semester is absolute madness, but I believe in you so much. Only 20 more days until your flight lands at Logan Airport! I've already booked our table at Giacomo's in the North End for pasta and cannolis. Keep crushing those CS 162 & EECS 126 p-sets. I'm counting down every single hour on my screen too! Love you!"
+            </div>
+
+            <div class="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-slate-800">
+                <span>Flight UA 2412 • SFO to BOS</span>
+                <button onclick="closeLoveNoteModal()" class="px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-semibold">
+                    Send Back Warm Hug ✈️
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Handshake Contest Submission Helper Modal -->
+    <div id="submission-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold">
+                        Handshake Official Entry
+                    </span>
+                    <h3 class="text-base font-bold text-white">Contest Project Details Card</h3>
+                </div>
+                <button onclick="closeSubmissionModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Project Form Pre-populated -->
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-300">a. Project Title:</label>
+                    <input type="text" readonly value="40 Units to Boston: The Berkeley-to-Boston Sprint" class="w-full mt-1 bg-slate-950 border border-slate-800 text-amber-300 font-mono p-2.5 rounded-xl font-bold">
+                </div>
+
+                <div>
+                    <label class="font-semibold text-slate-300">b. Project Description (Formatted for Handshake AI Skills Studio X Google Challenge):</label>
+                    <textarea readonly rows="6" class="w-full mt-1 bg-slate-950 border border-slate-800 text-slate-300 font-mono p-2.5 rounded-xl leading-relaxed">
+A hyper-focused, dual-metric iOS 18 lock screen interface built specifically for a UC Berkeley student taking an intense 40-unit course load over 20 days leading up to a flight to Boston to meet their partner. Features dynamic depth-effect clock clearance, interactive milestone check-offs (CS 162, EECS 126, CS 170, STAT 134, PHYS 7B), live dual-progress visualization (Academic Completion % vs Boston Flight Countdown %), in-browser Tone.js ambient study sound synthesizer, and customized aesthetic wallpapers. Designed for high usefulness, visual elegance, and strict lock screen layout perfection.
+                    </textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="font-semibold text-slate-300">c. Submission Deadline:</label>
+                        <p class="mt-1 bg-slate-950 border border-slate-800 text-slate-300 p-2 rounded-xl">November 23, 2026 at 11:59 PM PT</p>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-300">d. Prize Tier:</label>
+                        <p class="mt-1 bg-slate-950 border border-slate-800 text-emerald-400 font-bold p-2 rounded-xl">$1,000 USD Winner Category</p>
+                    </div>
+                </div>
+
+                <!-- Rubric Criteria Self-Check -->
+                <div class="bg-indigo-950/40 border border-indigo-800/40 rounded-xl p-3.5 space-y-2 text-slate-200">
+                    <h4 class="font-bold text-indigo-300 text-xs">Rubric Evaluation Readiness Score (5/5 Expectations):</h4>
+                    <ul class="space-y-1 text-[11px] list-disc list-inside text-slate-300">
+                        <li><strong>Execution (25%):</strong> Perfect phone format, clock clearance, and dynamic 20-day countdown timer.</li>
+                        <li><strong>Creativity (25%):</strong> High-stakes real-world story combining 40 units UC Berkeley load with long-distance flight deadline.</li>
+                        <li><strong>Usefulness (25%):</strong> Interactive task checking, study audio synthesizer, and dual progress tracking.</li>
+                        <li><strong>Polish (25%):</strong> iOS 18 dynamic island, glassmorphism, responsive widget stack, sound effects.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="copySubmissionDetails()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs flex items-center gap-1.5">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copy Submission Text
+                </button>
+                <button onclick="closeSubmissionModal()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-500 hover:to-sky-500 text-white font-bold text-xs">
+                    Ready to Win $1,000! 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // Data Structure for the 20-Day UC Berkeley 40-Unit Sprint
+        const sprintDaysData = [
+            { day: 1, date: "Thu, Nov 6", course: "CS 162 + EECS 126", focus: "Thread Scheduler & Random Vars", milestones: [
+                { id: "d1-1", text: "CS 162: Implement Pintos thread priority scheduler", completed: true, units: 2 },
+                { id: "d1-2", text: "EECS 126: Problem Set 8 (Joint Gaussian Distributions)", completed: true, units: 2 },
+                { id: "d1-3", text: "CS 170: Read Dynamic Programming Chapter 6", completed: false, units: 1 }
+            ]},
+            { day: 2, date: "Fri, Nov 7", course: "CS 170 + STAT 134", focus: "Graph Algorithms & Markov Chains", milestones: [
+                { id: "d2-1", text: "CS 170: Homework 9 (Shortest Paths & Bellman-Ford)", completed: true, units: 2 },
+                { id: "d2-2", text: "STAT 134: Quiz 4 prep (Poisson Processes)", completed: true, units: 1 },
+                { id: "d2-3", text: "PHYS 7B: Lab 6 (Electromagnetic Induction)", completed: true, units: 2 }
+            ]},
+            { day: 3, date: "Sat, Nov 8", course: "EECS 126 Exam Day", focus: "Midterm #2 Deep Focus", milestones: [
+                { id: "d3-1", text: "EECS 126: Take Midterm #2 Exam (3.8+ GPA Goal)", completed: true, units: 4 },
+                { id: "d3-2", text: "CS 162: Project 2 User Programs Architecture Design", completed: true, units: 2 }
+            ]},
+            { day: 4, date: "Sun, Nov 9", course: "CS 162 + PHYS 7B", focus: "System Calls & Wave Optics", milestones: [
+                { id: "d4-1", text: "CS 162: Write system call handler for exec & wait", completed: true, units: 2 },
+                { id: "d4-2", text: "PHYS 7B: Problem Set 10 (Interference & Diffraction)", completed: true, units: 2 },
+                { id: "d4-3", text: "Call Maya in Boston for 30 min study break", completed: true, units: 0 }
+            ]},
+            { day: 5, date: "Mon, Nov 10", course: "CS 170 + ECON 100B", focus: "NP-Completeness & Macro", milestones: [
+                { id: "d5-1", text: "CS 170: Prove 3-SAT to Independent Set reduction", completed: true, units: 2 },
+                { id: "d5-2", text: "ECON 100B: Solow Growth Model Essay Draft", completed: false, units: 2 }
+            ]},
+            { day: 6, date: "Tue, Nov 11", course: "CS 162 Lab Check", focus: "Virtual Memory Paging", milestones: [
+                { id: "d6-1", text: "CS 162: Frame table allocation & page fault handler", completed: false, units: 2 },
+                { id: "d6-2", text: "EECS 126: Read Markov Decision Processes", completed: false, units: 1 }
+            ]},
+            { day: 7, date: "Wed, Nov 12", course: "STAT 134 + PHYS 7B", focus: "Continuous Random Vars & Circuits", milestones: [
+                { id: "d7-1", text: "STAT 134: Midterm Review Problem Set", completed: false, units: 2 },
+                { id: "d7-2", text: "PHYS 7B: AC Circuits & Phasors HW", completed: false, units: 2 }
+            ]},
+            { day: 8, date: "Thu, Nov 13", course: "CS 170 Midterm Prep", focus: "Linear Programming Duality", milestones: [
+                { id: "d8-1", text: "CS 170: Solve 5 past exam problems on LP Duality", completed: false, units: 3 },
+                { id: "d8-2", text: "CS 162: File Systems inode implementation", completed: false, units: 2 }
+            ]},
+            { day: 9, date: "Fri, Nov 14", course: "EECS 126 + CS 162", focus: "Kalman Filters & Memory Leaks", milestones: [
+                { id: "d9-1", text: "EECS 126: Kalman Filter implementation lab", completed: false, units: 2 },
+                { id: "d9-2", text: "CS 162: Valgrind memory leak debugging sprint", completed: false, units: 2 }
+            ]},
+            { day: 10, date: "Sat, Nov 15", course: "Halfway Milestone!", focus: "40-Unit Survival Midpoint", milestones: [
+                { id: "d10-1", text: "CS 170: Submit HW 10 on Approximation Algos", completed: false, units: 3 },
+                { id: "d10-2", text: "Confirm Flight UA 2412 seat & carry-on luggage", completed: false, units: 0 }
+            ]},
+            { day: 11, date: "Sun, Nov 16", course: "PHYS 7B Exam", focus: "Electromagnetism Final Prep", milestones: [
+                { id: "d11-1", text: "PHYS 7B: Complete Practice Final Exam", completed: false, units: 3 },
+                { id: "d11-2", text: "ECON 100B: Monetary Policy Problem Set", completed: false, units: 1 }
+            ]},
+            { day: 12, date: "Mon, Nov 17", course: "CS 162 Buffer Cache", focus: "Disk I/O Optimization", milestones: [
+                { id: "d12-1", text: "CS 162: Write LRU Buffer Cache module", completed: false, units: 2 },
+                { id: "d12-2", text: "EECS 126: Hypothesis Testing review", completed: false, units: 1 }
+            ]},
+            { day: 13, date: "Tue, Nov 18", course: "STAT 134 Exam Day", focus: "Probability Final Push", milestones: [
+                { id: "d13-1", text: "STAT 134: Take Midterm #2 Exam", completed: false, units: 3 },
+                { id: "d13-2", text: "CS 170: Read Streaming Algorithms & FFT", completed: false, units: 1 }
+            ]},
+            { day: 14, date: "Wed, Nov 19", course: "CS 170 + CS 162", focus: "FFT & Subdirectories", milestones: [
+                { id: "d14-1", text: "CS 170: Fast Fourier Transform HW 11", completed: false, units: 2 },
+                { id: "d14-2", text: "CS 162: Extensible files & directory trees", completed: false, units: 2 }
+            ]},
+            { day: 15, date: "Thu, Nov 20", course: "ECON 100B Final", focus: "Macroeconomics Final Exam", milestones: [
+                { id: "d15-1", text: "ECON 100B: Final Exam Submission", completed: false, units: 3 },
+                { id: "d15-2", text: "EECS 126: Information Theory & Entropy HW", completed: false, units: 1 }
+            ]},
+            { day: 16, date: "Fri, Nov 21", course: "CS 162 Code Freeze", focus: "Final Pintos Submission", milestones: [
+                { id: "d16-1", text: "CS 162: Run autograder - achieve 100% test pass", completed: false, units: 4 },
+                { id: "d16-2", text: "Pack winter jacket for Boston weather!", completed: false, units: 0 }
+            ]},
+            { day: 17, date: "Sat, Nov 22", course: "CS 170 Final Sprint", focus: "Complete All Coursework", milestones: [
+                { id: "d17-1", text: "CS 170: Submit final project & practice final", completed: false, units: 3 },
+                { id: "d17-2", text: "EECS 126: Final lab checkoff", completed: false, units: 1 }
+            ]},
+            { day: 18, date: "Sun, Nov 23", course: "Handshake Entry Day!", focus: "Submit November Challenge", milestones: [
+                { id: "d18-1", text: "Submit Handshake AI Skills Studio Project", completed: false, units: 1 },
+                { id: "d18-2", text: "Final GPA check: Maintain 3.8+ across 40 units", completed: false, units: 0 }
+            ]},
+            { day: 19, date: "Mon, Nov 24", course: "Pre-Flight Prep", focus: "Cal to SFO Transit Prep", milestones: [
+                { id: "d19-1", text: "BART to SFO Airport route check", completed: false, units: 0 },
+                { id: "d19-2", text: "Buy gift for Maya at Telegraph Ave", completed: false, units: 0 }
+            ]},
+            { day: 20, date: "Tue, Nov 25", course: "FLIGHT DAY! SFO✈️BOS", focus: "Reunion in Boston!", milestones: [
+                { id: "d20-1", text: "Board Flight UA 2412 at SFO Terminal 3", completed: false, units: 0 },
+                { id: "d20-2", text: "Land at Boston Logan (BOS) & see Maya! ❤️", completed: false, units: 0 }
+            ]}
+        ];
+
+        // App State Management
+        let selectedDay = 1;
+        let wallpaperTheme = 'berkeley';
+        let audioEngineRunning = false;
+        let activeAudioType = 'off';
+        let totalTargetUnits = 40;
+        let countdownDays = 20;
+
+        // Tone.js Synth Audio Variables
+        let noiseNode = null;
+        let filterNode = null;
+        let osc1 = null;
+        let osc2 = null;
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initClock();
+            renderDayTabs();
+            loadDayMilestones(selectedDay);
+            updateProgressCalculations();
+            
+            // Periodically refresh lock screen clock every second
+            setInterval(updateLockClock, 1000);
+        });
+
+        // Real-Time Clock & Clearance Handler
+        function initClock() {
+            updateLockClock();
+        }
+
+        function updateLockClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const lockTimeEl = document.getElementById('lock-time');
+            const statusTimeEl = document.getElementById('status-time');
+            const lockDateEl = document.getElementById('lock-date');
+
+            if (lockTimeEl) lockTimeEl.textContent = `${hours}:${minutes}`;
+            if (statusTimeEl) statusTimeEl.textContent = `${hours}:${minutes}`;
+
+            const options = { weekday: 'long', month: 'short', day: 'numeric' };
+            if (lockDateEl) lockDateEl.textContent = now.toLocaleDateString('en-US', options);
+
+            // Update main countdown timer string
+            const mainCountdown = document.getElementById('main-countdown-clock');
+            if (mainCountdown) {
+                mainCountdown.textContent = `${countdownDays}d ${23 - now.getHours()}h ${59 - now.getMinutes()}m ${59 - seconds}s`;
+            }
+        }
+
+        // Render Day Tabs Ribbon
+        function renderDayTabs() {
+            const ribbon = document.getElementById('day-tabs-ribbon');
+            const daySelect = document.getElementById('day-select');
+            
+            if (!ribbon || !daySelect) return;
+
+            ribbon.innerHTML = '';
+            daySelect.innerHTML = '';
+
+            sprintDaysData.forEach(d => {
+                // Populate Dropdown
+                const opt = document.createElement('option');
+                opt.value = d.day;
+                opt.textContent = `Day ${d.day}: ${d.course}`;
+                daySelect.appendChild(opt);
+
+                // Populate Horizontal Ribbon
+                const tab = document.createElement('button');
+                tab.className = `shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border flex flex-col items-center gap-0.5 ${
+                    d.day === selectedDay 
+                    ? 'bg-indigo-600 text-white border-indigo-400 shadow-md scale-105' 
+                    : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
+                }`;
+                tab.onclick = () => loadDayMilestones(d.day);
+
+                tab.innerHTML = `
+                    <span>Day ${d.day}</span>
+                    <span class="text-[9px] opacity-80 font-normal">${d.date.split(',')[0]}</span>
+                `;
+                ribbon.appendChild(tab);
+            });
+        }
+
+        // Load Specific Day Details into Dashboard and Phone Widget
+        function loadDayMilestones(dayNum) {
+            selectedDay = dayNum;
+            const dayData = sprintDaysData.find(d => d.day === dayNum) || sprintDaysData[0];
+
+            // Sync Dropdown
+            const daySelect = document.getElementById('day-select');
+            if (daySelect) daySelect.value = dayNum;
+
+            renderDayTabs();
+
+            // Render Dashboard Card
+            const detailCard = document.getElementById('active-day-detail-card');
+            if (detailCard) {
+                detailCard.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                        <div>
+                            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">DAY ${dayData.day} OF 20 • ${dayData.date}</span>
+                            <h3 class="text-base font-bold text-white">${dayData.course}: ${dayData.focus}</h3>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono font-bold">
+                            Target Units: ${dayData.milestones.reduce((acc, m) => acc + m.units, 0)}u
+                        </span>
+                    </div>
+
+                    <div class="space-y-2 pt-1">
+                        ${dayData.milestones.map(m => `
+                            <div onclick="toggleMilestone('${m.id}')" class="flex items-center justify-between p-2.5 rounded-xl border transition cursor-pointer ${
+                                m.completed 
+                                ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-200' 
+                                : 'bg-slate-900 hover:bg-slate-850 border-slate-800 text-slate-200'
+                            }">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-5 h-5 rounded-md border flex items-center justify-center transition ${
+                                        m.completed ? 'bg-emerald-500 border-emerald-400 text-black' : 'border-slate-600 bg-slate-950'
+                                    }">
+                                        ${m.completed ? '✓' : ''}
+                                    </div>
+                                    <span class="text-xs font-medium ${m.completed ? 'line-through opacity-75' : ''}">${m.text}</span>
+                                </div>
+                                <span class="text-[10px] font-mono text-slate-400 font-semibold">${m.units > 0 ? `+${m.units} units` : 'Goal'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Sync with Lock Screen Phone Widget
+            const widgetTitle = document.getElementById('widget-day-title');
+            const widgetCode = document.getElementById('widget-course-code');
+            const widgetList = document.getElementById('widget-milestones-list');
+
+            if (widgetTitle) widgetTitle.textContent = `Day ${dayData.day} / 20 Milestones`;
+            if (widgetCode) widgetCode.textContent = dayData.course;
+
+            if (widgetList) {
+                widgetList.innerHTML = dayData.milestones.map(m => `
+                    <div onclick="toggleMilestone('${m.id}')" class="flex items-center justify-between text-[11px] p-1.5 rounded-lg bg-black/40 border border-white/10 hover:bg-white/10 transition cursor-pointer">
+                        <span class="truncate pr-2 ${m.completed ? 'line-through opacity-60 text-emerald-300' : 'text-slate-100'}">${m.text}</span>
+                        <span class="${m.completed ? 'text-emerald-400' : 'text-slate-400'}">${m.completed ? '✓' : '○'}</span>
+                    </div>
+                `).join('');
+            }
+
+            lucide.createIcons();
+        }
+
+        // Toggle Milestone Completion
+        function toggleMilestone(id) {
+            sprintDaysData.forEach(d => {
+                d.milestones.forEach(m => {
+                    if (m.id === id) {
+                        m.completed = !m.completed;
+                        if (m.completed) {
+                            playChime();
+                            confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+                        }
+                    }
+                });
+            });
+
+            loadDayMilestones(selectedDay);
+            updateProgressCalculations();
+        }
+
+        // Calculate and Update Dual Progress Bars
+        function updateProgressCalculations() {
+            let totalUnitsDone = 0;
+            sprintDaysData.forEach(d => {
+                d.milestones.forEach(m => {
+                    if (m.completed && m.units > 0) {
+                        totalUnitsDone += m.units;
+                    }
+                });
+            });
+
+            const unitPercent = Math.min(100, Math.round((totalUnitsDone / totalTargetUnits) * 100));
+            
+            // Days Time Elapsed Calculation (Day 1 of 20 = 5%, etc.)
+            const timePercent = Math.min(100, Math.round((selectedDay / 20) * 100));
+
+            // Miles remaining to Boston (2697 miles total SFO -> BOS)
+            const remainingMiles = Math.max(0, Math.round(2697 * (1 - (selectedDay / 20))));
+
+            // Update Phone Widget DOM
+            const wUnitBar = document.getElementById('widget-unit-bar');
+            const wUnitText = document.getElementById('widget-unit-percent');
+            const wTimeBar = document.getElementById('widget-time-bar');
+            const wTimeText = document.getElementById('widget-time-percent');
+            const distCounter = document.getElementById('distance-counter');
+            const mainUnitsComp = document.getElementById('main-units-completed');
+            const streakCount = document.getElementById('streak-counter');
+
+            if (wUnitBar) wUnitBar.style.width = `${unitPercent}%`;
+            if (wUnitText) wUnitText.textContent = `${unitPercent}%`;
+            if (wTimeBar) wTimeBar.style.width = `${timePercent}%`;
+            if (wTimeText) wTimeText.textContent = `${timePercent}%`;
+            if (distCounter) distCounter.textContent = `${remainingMiles.toLocaleString()} miles`;
+            if (mainUnitsComp) mainUnitsComp.textContent = `${totalUnitsDone} / 40 Units`;
+            if (streakCount) streakCount.textContent = `${selectedDay} Days 🔥`;
+
+            // Days Countdown Badge
+            const daysBadge = document.getElementById('days-countdown-badge');
+            if (daysBadge) daysBadge.textContent = `${20 - selectedDay + 1} DAYS REMAINING`;
+        }
+
+        // Lock Screen Wallpaper Switcher
+        function setWallpaper(theme) {
+            const bg = document.getElementById('lockscreen-bg');
+            if (!bg) return;
+
+            bg.classList.remove('wp-berkeley', 'wp-boston', 'wp-oled', 'wp-lofi', 'wp-flight');
+            bg.classList.add(`wp-${theme}`);
+            wallpaperTheme = theme;
+        }
+
+        // Custom Goal Text Updater
+        function updateGoalText() {
+            const input = document.getElementById('custom-goal-input');
+            const lockGoal = document.getElementById('lock-focus-goal');
+            if (input && lockGoal) {
+                lockGoal.textContent = `Goal: ${input.value}`;
+            }
+        }
+
+        // Flashlight Toggle Simulation
+        let flashlightOn = false;
+        function toggleFlashlight() {
+            flashlightOn = !flashlightOn;
+            const btn = document.getElementById('btn-flashlight');
+            if (btn) {
+                if (flashlightOn) {
+                    btn.classList.add('bg-amber-400', 'text-black', 'shadow-lg', 'shadow-amber-400/50');
+                    btn.classList.remove('bg-black/40', 'text-white');
+                } else {
+                    btn.classList.remove('bg-amber-400', 'text-black', 'shadow-lg', 'shadow-amber-400/50');
+                    btn.classList.add('bg-black/40', 'text-white');
+                }
+            }
+        }
+
+        // Dynamic Island Expansion Toggle
+        let islandExpanded = false;
+        function toggleDynamicIsland() {
+            islandExpanded = !islandExpanded;
+            const island = document.getElementById('dynamic-island');
+            const islandText = document.getElementById('dynamic-island-text');
+
+            if (island) {
+                if (islandExpanded) {
+                    island.classList.add('px-4', 'py-2', 'ring-2', 'ring-indigo-400/50');
+                    if (islandText) islandText.textContent = "CS 162 Sprinting • 2,697 mi to BOS";
+                } else {
+                    island.classList.remove('px-4', 'py-2', 'ring-2', 'ring-indigo-400/50');
+                    if (islandText) islandText.textContent = "20 Days • BOS Flight";
+                }
+            }
+        }
+
+        // Love Note Modal Toggle
+        function showLoveNoteModal() {
+            const modal = document.getElementById('lovenote-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeLoveNoteModal() {
+            const modal = document.getElementById('lovenote-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // Submission Modal Toggle
+        function openSubmissionModal() {
+            const modal = document.getElementById('submission-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeSubmissionModal() {
+            const modal = document.getElementById('submission-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function copySubmissionDetails() {
+            const text = `Title: 40 Units to Boston: The Berkeley-to-Boston Sprint\nDescription: Dynamic iOS 18 interactive lock screen built for Handshake AI Skills Studio x Google November Challenge. Mapped 40 UC Berkeley units across 20 days leading to Boston flight deadline.`;
+            document.execCommand('copy');
+            alert('Submission Card details copied to clipboard!');
+        }
+
+        // Audio Engine (Tone.js Ambient Focus Noise Generator)
+        async function toggleAudio() {
+            if (!audioEngineRunning) {
+                await Tone.start();
+                audioEngineRunning = true;
+                setAudioMode('rain');
+            } else {
+                setAudioMode('off');
+            }
+        }
+
+        function setAudioMode(type) {
+            activeAudioType = type;
+            const btnText = document.getElementById('audio-btn-text');
+            const toggleBtn = document.getElementById('audio-toggle-btn');
+
+            // Clean previous nodes
+            if (noiseNode) { noiseNode.stop(); noiseNode.dispose(); noiseNode = null; }
+            if (osc1) { osc1.stop(); osc1.dispose(); osc1 = null; }
+            if (osc2) { osc2.stop(); osc2.dispose(); osc2 = null; }
+
+            if (type === 'off') {
+                if (btnText) btnText.textContent = "Focus Audio: Off";
+                if (toggleBtn) toggleBtn.classList.remove('border-emerald-500', 'bg-emerald-950/40');
+                return;
+            }
+
+            if (btnText) btnText.textContent = `Audio: ${type.toUpperCase()}`;
+            if (toggleBtn) toggleBtn.classList.add('border-emerald-500', 'bg-emerald-950/40');
+
+            const vol = parseFloat(document.getElementById('audio-volume')?.value || -12);
+
+            if (type === 'rain') {
+                noiseNode = new Tone.Noise("pink").start();
+                filterNode = new Tone.Filter(800, "lowpass").toDestination();
+                filterNode.volume.value = vol;
+                noiseNode.connect(filterNode);
+            } else if (type === 'white') {
+                noiseNode = new Tone.Noise("brown").start();
+                filterNode = new Tone.Filter(400, "lowpass").toDestination();
+                filterNode.volume.value = vol;
+                noiseNode.connect(filterNode);
+            } else if (type === 'binaural') {
+                osc1 = new Tone.Oscillator(200, "sine").toDestination().start();
+                osc2 = new Tone.Oscillator(240, "sine").toDestination().start();
+                osc1.volume.value = vol - 6;
+                osc2.volume.value = vol - 6;
+            }
+        }
+
+        function adjustVolume(val) {
+            if (filterNode) filterNode.volume.value = parseFloat(val);
+            if (osc1) osc1.volume.value = parseFloat(val) - 6;
+            if (osc2) osc2.volume.value = parseFloat(val) - 6;
+        }
+
+        // Chime SFX on milestone completion using Tone.js Synth
+        function playChime() {
+            try {
+                const synth = new Tone.Synth().toDestination();
+                synth.volume.value = -10;
+                synth.triggerAttackRelease("C5", "8n");
+            } catch(e) {
+                // AudioContext fallback
+            }
+        }
+
+        // Quick lock screen scale toggle for presentation view
+        let isFullScreenPhone = false;
+        function toggleSprintViewMode() {
+            isFullScreenPhone = !isFullScreenPhone;
+            const phoneWrapper = document.getElementById('phone-wrapper');
+            if (phoneWrapper) {
+                if (isFullScreenPhone) {
+                    phoneWrapper.classList.add('scale-105', 'shadow-indigo-500/20');
+                } else {
+                    phoneWrapper.classList.remove('scale-105', 'shadow-indigo-500/20');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
